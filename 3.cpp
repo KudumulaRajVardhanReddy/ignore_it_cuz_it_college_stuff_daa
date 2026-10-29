@@ -1,47 +1,44 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define int long long
+int n;
 
-int n, solutions_count = 0;
-vector<int> queen_positions;
+vector<vector<int>> board;
+vector<int> col, diag1, diag2;
 
-void print_board() {
-    for (int r = 0; r < n; ++r) {
-        for (int c = 0; c < n; ++c) cout << (queen_positions[r] == c ? "Q " : ". ");
+void solve_nqueens(int r) {
+    if (r == n) {
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) cout << (board[i][j] ? "Q" : ".");
+            cout << "\n";
+        }
         cout << "\n";
-    }
-    cout << "\n\n";
-}
-
-void backtrack(int row, int cols, int diag1, int diag2) {
-    if (row == n) {
-        ++solutions_count;
-        print_board();
         return;
     }
 
-    int available_slots = ((1 << n) - 1) & ~(cols | diag1 | diag2);
+    for (int c = 0; c < n; ++c) {
+        if (col[c] || diag1[r + c] || diag2[r - c + n - 1]) continue;
 
-    while (available_slots > 0) {
-        int p = available_slots & -available_slots;
-        available_slots -= p;
+        board[r][c] = 1;
+        col[c] = diag1[r + c] = diag2[r - c + n - 1] = 1;
 
-        int col_idx = __builtin_ctz(p);
-        queen_positions[row] = col_idx;
+        solve_nqueens(r + 1);
 
-        backtrack(row + 1, cols | p, (diag1 | p) << 1, (diag2 | p) >> 1);
+        board[r][c] = 0;
+        col[c] = diag1[r + c] = diag2[r - c + n - 1] = 0;
     }
 }
 
 void solve() {
     cin >> n;
-    solutions_count = 0;
-    queen_positions.assign(n, 0);
 
-    cout << "\n";
-    backtrack(0, 0, 0, 0);
-    cout << "Total solutions: " << solutions_count << "\n";
+    board.assign(n, vector<int>(n, 0));
+
+    col.assign(n, 0);
+    diag1.assign(2 * n, 0);
+    diag2.assign(2 * n, 0);
+
+    solve_nqueens(0);
 }
 
 signed main() { solve(); }
